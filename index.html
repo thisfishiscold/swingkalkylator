@@ -1,0 +1,348 @@
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Swing Trading-kalkylator</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#eef2f8; --card:#ffffff; --ink:#0f172a; --muted:#64748b; --faint:#94a3b8;
+    --line:#e7ebf1; --blue1:#2563eb; --blue2:#1d4ed8; --green:#16a34a;
+    --green-bg:#f0fdf4; --green-line:#bbf7d0; --red:#dc2626; --red-bg:#fef2f2;
+    --amber:#b45309; --shadow:0 1px 2px rgba(15,23,42,.04),0 8px 24px rgba(15,23,42,.06);
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{
+    font-family:'Inter',system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+    color:var(--ink);
+    background:
+      radial-gradient(1200px 500px at 50% -200px,#dbe6fb 0,transparent 60%),
+      var(--bg);
+    min-height:100vh; line-height:1.45;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:660px; margin:0 auto; padding:28px 16px 60px}
+  header h1{font-size:26px; font-weight:800; margin:0 0 2px; letter-spacing:-.02em}
+  header p{margin:0 0 22px; color:var(--muted); font-size:14px}
+
+  .card{
+    background:var(--card); border:1px solid var(--line); border-radius:16px;
+    box-shadow:var(--shadow); margin-bottom:16px; overflow:hidden;
+  }
+  .card-pad{padding:18px}
+
+  details>summary{
+    list-style:none; cursor:pointer; padding:15px 18px; display:flex;
+    align-items:center; justify-content:space-between; font-weight:600; user-select:none;
+  }
+  details>summary::-webkit-details-marker{display:none}
+  details>summary .meta{font-weight:400; color:var(--muted); font-size:12px; display:flex; align-items:center; gap:8px}
+  .chev{width:16px;height:16px;transition:transform .2s;color:var(--faint);flex:0 0 auto}
+  details[open] .chev{transform:rotate(180deg)}
+  .inner{padding:4px 18px 18px; border-top:1px solid var(--line)}
+
+  label.fl{display:block; font-size:13px; font-weight:600; margin:0 0 6px; color:#334155}
+  .help{font-size:12px; color:var(--faint); margin:6px 0 0; line-height:1.4}
+  .field{margin-bottom:14px}
+
+  .inp{position:relative}
+  .inp .pre{position:absolute; left:12px; top:50%; transform:translateY(-50%); color:var(--faint); font-size:13px; pointer-events:none}
+  .inp input{
+    width:100%; padding:10px 12px 10px 34px; border:1px solid #d4dae3; border-radius:10px;
+    font:inherit; font-size:14px; color:var(--ink); background:#fff; transition:border .15s,box-shadow .15s;
+  }
+  .inp input.nopre{padding-left:12px}
+  .inp input:focus{outline:none; border-color:var(--blue1); box-shadow:0 0 0 3px rgba(37,99,235,.15)}
+
+  .grid3{display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px}
+  .grid2{display:grid; grid-template-columns:1fr 1fr; gap:12px}
+  .grid4{display:grid; grid-template-columns:repeat(4,1fr); gap:8px}
+  @media(max-width:560px){.grid3,.grid4{grid-template-columns:1fr 1fr}}
+
+  .ref{position:relative; border:1px solid var(--line); border-radius:10px; padding:9px 10px; background:#fff; transition:.15s}
+  .ref.vald{border-color:var(--green); background:var(--green-bg); box-shadow:0 0 0 1px var(--green)}
+  .ref .nm{font-size:13px; font-weight:700; color:#334155}
+  .ref.vald .nm{color:#15803d}
+  .ref .pc{font-size:12px; color:var(--muted)}
+  .ref .mn{font-size:12px; color:var(--faint)}
+  .ref .sp{font-size:10px; color:var(--faint); margin-top:2px}
+  .ref .tag{position:absolute; top:6px; right:6px; font-size:9px; font-weight:700; color:#15803d; background:#dcfce7; border-radius:5px; padding:2px 5px; line-height:1}
+
+  .note{font-size:12px; color:var(--faint); margin:10px 0 0}
+
+  .alert{border-radius:10px; padding:10px 12px; font-size:13px; margin-top:6px}
+  .alert.red{background:var(--red-bg); border:1px solid #fecaca; color:var(--red)}
+
+  .placeholder{
+    border:2px dashed #cbd5e1; border-radius:16px; padding:34px 18px; text-align:center;
+    color:var(--faint); font-size:14px; margin-bottom:16px;
+  }
+
+  .hero{
+    border-radius:16px; padding:20px; margin-bottom:16px; color:#fff;
+    background:linear-gradient(135deg,var(--blue1),var(--blue2));
+    box-shadow:0 10px 30px rgba(37,99,235,.28);
+  }
+  .hero .top{display:flex; justify-content:space-between; align-items:center; margin-bottom:2px}
+  .hero .lbl{font-size:13px; color:#dbeafe}
+  .hero .badge{font-size:12px; background:rgba(255,255,255,.18); border-radius:999px; padding:3px 10px}
+  .hero .big{font-size:60px; font-weight:800; line-height:1; margin:2px 0 16px; letter-spacing:-.03em}
+  .hero .stats{display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px; font-size:13px}
+  .hero .stats .v{font-weight:700; margin-top:1px}
+
+  h2.sect{font-size:15px; font-weight:700; margin:0 0 6px}
+
+  .rowl{display:flex; justify-content:space-between; align-items:flex-start; padding:9px 0; border-bottom:1px solid #f1f5f9}
+  .rowl:last-child{border-bottom:none}
+  .rowl.hl{background:#eff6ff; margin:0 -12px; padding:9px 12px; border-radius:8px; border-bottom:none}
+  .rowl .lab{font-size:13px; color:#334155}
+  .rowl .lab.muted{color:var(--faint)}
+  .rowl .sub{font-size:11px; color:var(--faint); margin-top:2px; line-height:1.35}
+  .rowl .val{font-size:13px; font-weight:600; text-align:right; white-space:nowrap; padding-left:12px}
+  .rowl.hl .val,.rowl.hl .lab{color:var(--blue2); font-weight:700}
+  .rowl .val.muted{color:var(--faint); font-weight:500}
+
+  .greenbox{background:var(--green-bg); border:1px solid var(--green-line); border-radius:16px; padding:18px; margin-bottom:16px}
+  .greenbox h2{color:#15803d; font-size:15px; font-weight:700; margin:0 0 6px}
+  .greenbox .lead{font-size:13px; color:#166534; margin:0 0 8px}
+  .greenbox .lead b{color:#14532d}
+
+  footer{text-align:center; font-size:12px; color:var(--faint); margin-top:8px}
+  footer a{color:var(--muted)}
+</style>
+
+<div class="wrap">
+  <header>
+    <h1>Swing Trading-kalkylator</h1>
+    <p>Positionsstorlek, risk och courtage – courtageklass väljs automatiskt</p>
+  </header>
+
+  <!-- GRUNDINSTÄLLNINGAR -->
+  <details class="card" open>
+    <summary>
+      <span>Grundinställningar</span>
+      <span class="meta"><span id="sumSettings"></span>
+        <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+      </span>
+    </summary>
+    <div class="inner">
+      <div class="field">
+        <label class="fl">Kapital</label>
+        <div class="inp"><span class="pre">kr</span><input id="kapital" type="number" step="1000" value="50000"></div>
+      </div>
+      <div class="field">
+        <label class="fl">Risk per affär (%)</label>
+        <div class="inp"><span class="pre">%</span><input id="risk" type="number" step="0.1" value="0.5"></div>
+        <p class="help">0,5 % är försiktigt och ger fler affärer innan kapitalet tar skada. 1 % är mer aggressivt – större positioner men snabbare nedgång vid en förlustsvit.</p>
+      </div>
+      <div class="field" style="margin-bottom:4px">
+        <label class="fl">Courtageklass <span style="font-weight:400;color:var(--faint)">(väljs automatiskt utifrån orderstorlek)</span></label>
+        <div class="grid4" id="refGrid"></div>
+        <p class="note">Courtage = max(belopp × procent, minimibelopp). Klassen bestäms av orderns storlek.</p>
+      </div>
+    </div>
+  </details>
+
+  <!-- AFFÄR -->
+  <div class="card card-pad">
+    <h2 class="sect" style="margin-bottom:12px">Affär</h2>
+    <div class="grid3">
+      <div class="field" style="margin:0">
+        <label class="fl">Köpkurs</label>
+        <div class="inp"><span class="pre">kr</span><input id="kop" type="number" step="0.01" placeholder="0"></div>
+      </div>
+      <div class="field" style="margin:0">
+        <label class="fl">Stop-loss</label>
+        <div class="inp"><span class="pre">kr</span><input id="sl" type="number" step="0.01" placeholder="0"></div>
+      </div>
+      <div class="field" style="margin:0">
+        <label class="fl">Target (valfri)</label>
+        <div class="inp"><span class="pre">kr</span><input id="tgt" type="number" step="0.01" placeholder="0"></div>
+      </div>
+    </div>
+    <div id="slErr"></div>
+  </div>
+
+  <!-- RESULTAT -->
+  <div id="result"></div>
+
+  <!-- MÅNADSMÅL -->
+  <details class="card">
+    <summary>
+      <span>Månadsmål</span>
+      <span class="meta"><span id="sumMonth"></span>
+        <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+      </span>
+    </summary>
+    <div class="inner">
+      <div class="grid2" style="margin-bottom:6px">
+        <div class="field">
+          <label class="fl">Önskad nettovinst / mån</label>
+          <div class="inp"><span class="pre">kr</span><input id="netto" type="number" step="500" value="8800"></div>
+        </div>
+        <div class="field">
+          <label class="fl">Antal affärer / mån</label>
+          <div class="inp"><input class="nopre" id="affarer" type="number" step="1" value="4"></div>
+        </div>
+      </div>
+      <div id="monthRows"></div>
+    </div>
+  </details>
+
+  <footer>Courtagedata baserad på Avanza · Kalkylatorn ersätter inte rådgivning</footer>
+</div>
+
+<script>
+// ---------- Fasta regler: courtageklasser (Avanza, Stockholmsbörsen) ----------
+const COURTAGE = {
+  mini:   {namn:"Mini",      procent:0.25,  min:1,  undre:0,      ovre:15600,    spann:"< 15 600 kr"},
+  small:  {namn:"Small",     procent:0.15,  min:39, undre:15600,  ovre:46000,    spann:"15 600 – 46 000 kr"},
+  medium: {namn:"Medium",    procent:0.069, min:69, undre:46000,  ovre:143500,   spann:"46 000 – 143 500 kr"},
+  fast:   {namn:"Fast Pris", procent:0,     min:99, undre:143500, ovre:Infinity, spann:"> 143 500 kr"},
+};
+const rekommenderaKlass = (belopp) => {
+  if(belopp<=0) return "mini";
+  const hit = Object.entries(COURTAGE).find(([,k]) => belopp>=k.undre && belopp<k.ovre);
+  return hit ? hit[0] : "fast";
+};
+const courtage = (belopp,k) => Math.max(belopp*(k.procent/100), k.min);
+
+// ---------- Hjälpfunktioner ----------
+const num = (v)=>{const n=parseFloat(v); return isNaN(n)?0:n;};
+const fmtKr   = (v)=>new Intl.NumberFormat("sv-SE",{style:"currency",currency:"SEK",maximumFractionDigits:0}).format(v||0);
+const fmtKrDec= (v)=>new Intl.NumberFormat("sv-SE",{style:"currency",currency:"SEK",minimumFractionDigits:2,maximumFractionDigits:2}).format(v||0);
+const fmtProc = (v)=>new Intl.NumberFormat("sv-SE",{minimumFractionDigits:2,maximumFractionDigits:2}).format(v||0)+" %";
+const $ = (id)=>document.getElementById(id);
+const esc = (s)=>String(s);
+
+function row(lab, val, sub, opt={}){
+  const cls = "rowl" + (opt.hl?" hl":"");
+  const labCls = "lab" + (opt.muted?" muted":"");
+  const valCls = "val" + (opt.muted?" muted":"");
+  return `<div class="${cls}"><div><div class="${labCls}">${lab}</div>${sub?`<div class="sub">${sub}</div>`:""}</div><div class="${valCls}">${val}</div></div>`;
+}
+
+// ---------- Beräkning & rendering ----------
+function render(){
+  const kap=num($("kapital").value), r=num($("risk").value);
+  const kop=num($("kop").value), sl=num($("sl").value), tgt=num($("tgt").value);
+  const kopRaw=$("kop").value, slRaw=$("sl").value;
+
+  // Summary-texter
+  $("sumSettings").textContent = `${fmtKr(kap)} · risk ${fmtProc(r)} · courtage auto`;
+
+  const ifyllt = kopRaw!=="" && slRaw!=="";
+  const slGiltig = !(kop>0 && sl>0) || sl<kop;
+  const giltig = ifyllt && kop>0 && sl>0 && sl<kop;
+
+  const maxRisk = kap*(r/100);
+  const riskPerAktie = kop-sl;
+
+  // SL-fel
+  $("slErr").innerHTML = (ifyllt && !slGiltig)
+    ? `<div class="alert red">Stop-loss måste vara <strong>lägre</strong> än köpkursen.</div>` : "";
+
+  let aktivKey = null, res = "", monthPos = kap;
+
+  if(!giltig){
+    res = `<div class="placeholder">Fyll i köpkurs och en stop-loss lägre än köpkursen för att se beräkningen.</div>`;
+  } else {
+    const antal = Math.floor(maxRisk/riskPerAktie);
+    const faktiskRisk = antal*riskPerAktie;
+    const pos = antal*kop;
+    const andel = kap>0 ? pos/kap : 0;
+    aktivKey = rekommenderaKlass(pos);
+    const k = COURTAGE[aktivKey];
+
+    const cKopRaw = pos*(k.procent/100);
+    const cKop = Math.max(cKopRaw, k.min);
+    const minKop = cKopRaw < k.min;
+
+    const targetSatt = tgt>0;
+    const targetForslag = kop + riskPerAktie*3;
+    const effTarget = targetSatt ? tgt : targetForslag;
+    const rr = riskPerAktie>0 ? (effTarget-kop)/riskPerAktie : 0;
+
+    const saljbelopp = effTarget*antal;
+    const cSaljRaw = saljbelopp*(k.procent/100);
+    const cSalj = Math.max(cSaljRaw, k.min);
+    const minSalj = cSaljRaw < k.min;
+
+    const brutto = (effTarget-kop)*antal;
+    const netto = brutto - cKop - cSalj;
+    const over = pos>kap;
+
+    let html = "";
+    // Hero
+    html += `<div class="hero">
+      <div class="top"><div class="lbl">Antal aktier</div><div class="badge">Courtage: ${k.namn}</div></div>
+      <div class="big">${antal}</div>
+      <div class="stats">
+        <div><div class="lbl">Positionsstorlek</div><div class="v">${fmtKr(pos)}</div></div>
+        <div><div class="lbl">Andel av kapital</div><div class="v">${fmtProc(andel*100)}</div></div>
+        <div><div class="lbl">Faktisk risk</div><div class="v">${fmtKr(faktiskRisk)}</div></div>
+      </div></div>`;
+    // Varning
+    if(over){
+      html += `<div class="alert red" style="margin-bottom:16px"><strong>Varning:</strong> positionen (${fmtKr(pos)}) är större än ditt kapital (${fmtKr(kap)}). Du behöver belåning eller mindre risk/position.</div>`;
+    }
+    // Steg-tabell
+    html += `<div class="card card-pad"><h2 class="sect">Steg för steg</h2>`;
+    html += row("1. Maxrisk", fmtKr(maxRisk), `${fmtKr(kap)} × ${fmtProc(r)}`);
+    html += row("2. Risk per aktie", fmtKrDec(riskPerAktie), `${fmtKrDec(kop)} − ${fmtKrDec(sl)}`);
+    html += row("3. Antal aktier", antal, `golv(${fmtKr(maxRisk)} / ${fmtKrDec(riskPerAktie)}) – rundas alltid nedåt`, {hl:true});
+    html += row("4. Faktisk risk", fmtKr(faktiskRisk), `${antal} × ${fmtKrDec(riskPerAktie)}`);
+    html += row(`5. Courtage köp (${k.namn})`, fmtKrDec(cKop),
+      minKop ? `${fmtKr(pos)} × ${fmtProc(k.procent)} = ${fmtKrDec(cKopRaw)} → minicourtage ${fmtKr(k.min)} används`
+             : `${fmtKr(pos)} × ${fmtProc(k.procent)}`);
+    html += targetSatt
+      ? row("6. R/R-kvot", `1 : ${rr.toFixed(2)}`, `vinst per aktie ${fmtKrDec(effTarget-kop)} / risk ${fmtKrDec(riskPerAktie)}`, {hl:true})
+      : row("6. R/R-kvot", "–", "sätt en target för att räkna ut R/R", {muted:true});
+    html += `</div>`;
+    // Grön ruta
+    html += `<div class="greenbox"><h2>${targetSatt?"Resultat vid din target":"Förslag (target 0)"}</h2>`;
+    if(!targetSatt){
+      html += `<p class="lead">Föreslagen target: <b>${fmtKrDec(targetForslag)}</b> (köpkurs + risk per aktie × 3 → R/R 1:3)</p>`;
+    }
+    html += row("Bruttovinst", fmtKr(brutto), `(${fmtKrDec(effTarget)} − ${fmtKrDec(kop)}) × ${antal}`);
+    html += row("− Courtage köp", `− ${fmtKrDec(cKop)}`);
+    html += row("− Courtage sälj", `− ${fmtKrDec(cSalj)}`,
+      minSalj ? `${fmtKr(saljbelopp)} × ${fmtProc(k.procent)} → minicourtage ${fmtKr(k.min)}`
+              : `${fmtKr(saljbelopp)} × ${fmtProc(k.procent)}`);
+    html += row("Nettovinst", fmtKr(netto), null, {hl:true});
+    html += `</div>`;
+
+    res = html;
+  }
+  $("result").innerHTML = res;
+
+  // Referensrutor (markera vald klass)
+  $("refGrid").innerHTML = Object.entries(COURTAGE).map(([key,k])=>{
+    const vald = giltig && key===aktivKey;
+    return `<div class="ref${vald?" vald":""}">${vald?`<span class="tag">vald</span>`:""}
+      <div class="nm">${k.namn}</div><div class="pc">${fmtProc(k.procent)}</div>
+      <div class="mn">min ${fmtKr(k.min)}</div><div class="sp">${k.spann}</div></div>`;
+  }).join("");
+
+  // ---------- Månadsmål ----------
+  const netto=num($("netto").value), affarer=num($("affarer").value);
+  const mKlass = COURTAGE[rekommenderaKlass(kap)];
+  const cKopM = courtage(kap,mKlass), cSaljM = courtage(kap,mKlass);
+  const perAffar = cKopM+cSaljM;
+  const totalt = perAffar*affarer;
+  const bruttokrav = netto+totalt;
+  const vinstPerAffar = affarer>0 ? netto/affarer : 0;
+
+  $("sumMonth").textContent = `${fmtKr(netto)} / mån · ${affarer} affärer`;
+  let m = "";
+  m += row(`Courtage per affär – köp + sälj (${mKlass.namn})`, fmtKrDec(perAffar), `${fmtKrDec(cKopM)} köp + ${fmtKrDec(cSaljM)} sälj`);
+  m += row("Totalt courtage / mån", fmtKr(totalt), `${fmtKrDec(perAffar)} × ${affarer} affärer`);
+  m += row("Bruttovinstkrav", fmtKr(bruttokrav), "nettomål + totalt courtage", {hl:true});
+  m += row("Vinst per affär (netto)", fmtKr(vinstPerAffar));
+  m += `<p class="note">Courtaget skattas på en position ≈ hela kapitalet (${fmtKr(kap)}) för både köp och sälj, vilket ger klassen ${mKlass.namn}. Mindre positioner ger lägre courtage.</p>`;
+  $("monthRows").innerHTML = m;
+}
+
+document.querySelectorAll("input").forEach(el => el.addEventListener("input", render));
+render();
+</script>
